@@ -1,0 +1,80 @@
+mkdir -p db
+cat > db/init.sql <<'SQL'
+-- DB init for MediaCatalog
+
+-- users
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- genres
+CREATE TABLE IF NOT EXISTS genres (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- movies
+CREATE TABLE IF NOT EXISTS movies (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    year INT,
+    genre_id INT REFERENCES genres(id) ON DELETE SET NULL,
+    rating DECIMAL(3,1),
+    poster_url TEXT,
+    created_by INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- games
+CREATE TABLE IF NOT EXISTS games (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    genre_id INT REFERENCES genres(id) ON DELETE SET NULL,
+    platform VARCHAR(100),
+    rating DECIMAL(3,1),
+    poster_url TEXT,
+    created_by INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- books
+CREATE TABLE IF NOT EXISTS books (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255),
+    description TEXT,
+    genre_id INT REFERENCES genres(id) ON DELETE SET NULL,
+    year INT,
+    rating DECIMAL(3,1),
+    cover_url TEXT,
+    created_by INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- reviews
+CREATE TABLE IF NOT EXISTS reviews (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    content_type VARCHAR(20) CHECK (content_type IN ('movie','game','book')),
+    content_id INT NOT NULL,
+    rating DECIMAL(3,1),
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- favorites
+CREATE TABLE IF NOT EXISTS favorites (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    content_type VARCHAR(20) CHECK (content_type IN ('movie','game','book')),
+    content_id INT NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+SQL
