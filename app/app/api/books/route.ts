@@ -8,3 +8,10 @@ let books = [
 export async function GET() {
   return NextResponse.json(books);
 }
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  const newBook = { id: Date.now(), ...body };
+  books.push(newBooks);
+  return NextResponse.json(newBooks);
+}
