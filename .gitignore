@@ -19,6 +19,8 @@ dist/
 *.db
 __pycache__/
 *.sqlite
+.mock-users.json
+.mock-media.json
 
 # OS files
 .DS_Store

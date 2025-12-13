@@ -1,0 +1,61 @@
+# Dockerfile.frontend: production multi-stage build for Next.js frontend
+
+# --- Dependencies stage ----------------------------------------------------
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Copy lockfiles and package manifest
+COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci --legacy-peer-deps || npm install --legacy-peer-deps; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm install --no-frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+
+# --- Builder stage ---------------------------------------------------------
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Prisma не нужен для frontend - он используется только в backend API
+
+# Build Next.js (expects `output: 'standalone'` in next.config.mjs)
+RUN \
+  if [ -f yarn.lock ]; then yarn build; \
+  elif [ -f package-lock.json ]; then npm run build --legacy-peer-deps; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm build; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+
+# --- Runner stage ----------------------------------------------------------
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
+
+# Copy standalone output and static files
+# Next.js standalone output: барлық қажетті файлдар .next/standalone/ папкасында
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone .
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Убедимся, что папка app существует и имеет правильные права
+RUN mkdir -p /app/.next && chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT=3000
+
+# Next.js standalone output: server.js файлын табу және іске қосу
+WORKDIR /app
+CMD ["sh", "-c", "if [ -f server.js ]; then node server.js; elif [ -f app/server.js ]; then node app/server.js; else echo 'server.js файлы табылмады'; exit 1; fi"]

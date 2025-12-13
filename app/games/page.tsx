@@ -3,77 +3,23 @@ import { Footer } from "@/components/footer"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { CatalogGrid } from "@/components/catalog-grid"
 import { Gamepad2 } from "lucide-react"
+import type { MediaItem } from "@/lib/types"
 
-const gameItems = [
-  {
-    id: "2",
-    title: "The Witcher 3",
-    description: "An open-world RPG set in a fantasy universe full of meaningful choices and impactful consequences",
-    coverImage: "/witcher-3-inspired-cover.png",
-    type: "game" as const,
-    rating: 9.3,
-    year: 2015,
-    genre: ["RPG", "Adventure"],
-    popularity: 98,
-  },
-  {
-    id: "5",
-    title: "Elden Ring",
-    description: "An action RPG developed by FromSoftware and George R.R. Martin",
-    coverImage: "/generic-fantasy-game-cover.png",
-    type: "game" as const,
-    rating: 9.1,
-    year: 2022,
-    genre: ["RPG", "Action"],
-    popularity: 96,
-  },
-  {
-    id: "7",
-    title: "Baldurs Gate 3",
-    description: "A role-playing video game based on Dungeons & Dragons tabletop system",
-    coverImage: "/fantasy-rpg-cover.png",
-    type: "game" as const,
-    rating: 9.4,
-    year: 2023,
-    genre: ["RPG", "Strategy"],
-    popularity: 97,
-  },
-  {
-    id: "10",
-    title: "Starfield",
-    description: "An action RPG set in space where you can explore over 1000 planets",
-    coverImage: "/starfield-game-cover.png",
-    type: "game" as const,
-    rating: 7.8,
-    year: 2023,
-    genre: ["RPG", "Sci-Fi"],
-    popularity: 85,
-  },
-  {
-    id: "12",
-    title: "Red Dead Redemption 2",
-    description: "An epic tale of life in Americas unforgiving heartland during the decline of the outlaw era",
-    coverImage: "/red-dead-redemption-2.jpg",
-    type: "game" as const,
-    rating: 9.7,
-    year: 2018,
-    genre: ["Action", "Adventure"],
-    popularity: 98,
-  },
-  {
-    id: "15",
-    title: "God of War",
-    description: "Kratos and his son Atreus embark on a journey through Norse mythology",
-    coverImage: "/god-of-war-game-cover.jpg",
-    type: "game" as const,
-    rating: 9.5,
-    year: 2018,
-    genre: ["Action", "Adventure"],
-    popularity: 96,
-  },
-]
+async function getGames() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/games`, { cache: "no-store" })
+    const games: MediaItem[] = await res.json()
+    return games
+  } catch (error) {
+    console.error("Ойындарды алу қатесі:", error)
+    return []
+  }
+}
 
-export default function GamesPage() {
+export default async function GamesPage() {
+  const gameItems = await getGames()
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -85,8 +31,8 @@ export default function GamesPage() {
               <Gamepad2 className="h-6 w-6 text-accent" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-balance">Игры</h1>
-              <p className="text-muted-foreground text-pretty">Найди своё следующее игровое приключение</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-balance">Ойындар</h1>
+              <p className="text-muted-foreground text-pretty">Келесі ойынға толы шытырманды таңда</p>
             </div>
           </div>
         </div>

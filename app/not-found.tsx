@@ -18,9 +18,9 @@ export default function NotFound() {
           </h1>
 
           <div className="space-y-2">
-            <h2 className="text-2xl md:text-3xl font-bold text-balance">Страница не найдена</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-balance">Бет табылмады</h2>
             <p className="text-lg text-muted-foreground max-w-md mx-auto text-balance leading-relaxed">
-              Похоже, этот контент исчез. Давай вернём тебя к открытию удивительных медиа.
+              Бұл контент қолжетімсіз сияқты. Сізді қызықты медиаларды зерттеуге қайта оралтайық.
             </p>
           </div>
         </div>
@@ -29,13 +29,13 @@ export default function NotFound() {
           <Link href="/">
             <Button size="lg" className="gap-2 neon-glow">
               <Home className="h-5 w-5" />
-              На главную
+              Басты бетке
             </Button>
           </Link>
           <Link href="/movies">
             <Button size="lg" variant="outline" className="gap-2 bg-transparent">
               <Film className="h-5 w-5" />
-              Смотреть фильмы
+              Фильмдерді қарау
             </Button>
           </Link>
         </div>

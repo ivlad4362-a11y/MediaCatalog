@@ -3,49 +3,48 @@ import { Footer } from "@/components/footer"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { MediaDetail } from "@/components/media-detail"
 import { notFound } from "next/navigation"
+import type { MediaItem } from "@/lib/types"
 
-const bookData: Record<string, any> = {
-  "3": {
-    id: "3",
-    title: "Dune",
-    description:
-      "Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the 'spice' melange, a drug capable of extending life and enhancing consciousness. Coveted across the known universe, melange is a prize worth killing for.",
-    coverImage: "/dune-book-cover.png",
-    type: "book" as const,
-    rating: 8.5,
-    year: 1965,
-    genre: ["Sci-Fi", "Fantasy", "Adventure"],
-    popularity: 92,
-  },
-  "8": {
-    id: "8",
-    title: "Project Hail Mary",
-    description:
-      "Ryland Grace is the sole survivor on a desperate, last-chance mission—and if he fails, humanity and the earth itself will perish. Except that right now, he doesn't know that. He can't even remember his own name, let alone the nature of his assignment or how to complete it. A thrilling science fiction adventure from the author of The Martian.",
-    coverImage: "/project-hail-mary-book.png",
-    type: "book" as const,
-    rating: 8.7,
-    year: 2021,
-    genre: ["Sci-Fi", "Adventure", "Thriller"],
-    popularity: 91,
-  },
+async function getBook(id: string): Promise<MediaItem | null> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/books`, { cache: "no-store" })
+    const books: MediaItem[] = await res.json()
+    return books.find((book) => book.id === id) || null
+  } catch (error) {
+    console.error("Кітапты алу қатесі:", error)
+    return null
+  }
 }
 
-export default function BookDetailPage({ params }: { params: { id: string } }) {
-  const book = bookData[params.id]
+async function getRelatedBooks(currentId: string): Promise<Array<{ id: string; title: string; coverImage: string; rating: number }>> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/books`, { cache: "no-store" })
+    const books: MediaItem[] = await res.json()
+    return books
+      .filter((book) => book.id !== currentId)
+      .slice(0, 3)
+      .map((book) => ({
+        id: book.id,
+        title: book.title,
+        coverImage: book.coverImage,
+        rating: book.rating,
+      }))
+  } catch (error) {
+    console.error("Ұқсас кітаптарды алу қатесі:", error)
+    return []
+  }
+}
+
+export default async function BookDetailPage({ params }: { params: { id: string } }) {
+  const book = await getBook(params.id)
 
   if (!book) {
     notFound()
   }
 
-  const relatedBooks = [
-    {
-      id: "13",
-      title: "The Three-Body Problem",
-      coverImage: "/three-body-problem-book.jpg",
-      rating: 8.1,
-    },
-  ]
+  const relatedBooks = await getRelatedBooks(params.id)
 
   return (
     <div className="min-h-screen">

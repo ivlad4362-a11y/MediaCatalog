@@ -11,6 +11,7 @@ export interface MediaItem {
   genre: string[]
   popularity: number
   releatedItems?: string[]
+  watchUrl?: string
 }
 
 export interface Comment {

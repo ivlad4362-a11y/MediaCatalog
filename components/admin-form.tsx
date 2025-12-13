@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { X } from "lucide-react"
 import type { MediaItem, MediaType } from "@/lib/types"
@@ -25,6 +25,7 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
     title: "",
     description: "",
     coverImage: "",
+    watchUrl: "",
     type: type,
     rating: 0,
     year: new Date().getFullYear(),
@@ -41,6 +42,7 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
         title: "",
         description: "",
         coverImage: "",
+        watchUrl: "",
         type: type,
         rating: 0,
         year: new Date().getFullYear(),
@@ -72,24 +74,25 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
     })
   }
 
-  const typeNames = {
-    movie: "фильм",
-    book: "книгу",
-    game: "игру",
+  const typeLabels = {
+    movie: "фильмді",
+    book: "кітапты",
+    game: "ойынды",
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {item ? "Редактировать" : "Добавить"} {typeNames[type]}
-          </DialogTitle>
+          <DialogTitle>{item ? `${typeLabels[type]} өңдеу` : `${typeLabels[type]} қосу`}</DialogTitle>
+          <DialogDescription>
+            {item ? `${typeLabels[type]} мәліметтерін өзгертіңіз` : `Жаңа ${typeLabels[type]} қосыңыз`}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Название</Label>
+            <Label htmlFor="title">Атауы</Label>
             <Input
               id="title"
               value={formData.title}
@@ -99,7 +102,7 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Описание</Label>
+            <Label htmlFor="description">Сипаттамасы</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -110,7 +113,7 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="coverImage">URL обложки</Label>
+            <Label htmlFor="coverImage">Мұқаба URL-ы</Label>
             <Input
               id="coverImage"
               value={formData.coverImage}
@@ -122,16 +125,36 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
               <div className="relative w-32 h-48 rounded overflow-hidden border border-border">
                 <img
                   src={formData.coverImage || "/placeholder.svg"}
-                  alt="Предпросмотр"
+                  alt="Алдын ала қарау"
                   className="object-cover w-full h-full"
                 />
               </div>
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="watchUrl">
+              {type === "movie" && "Фильмді көру сілтемесі"}
+              {type === "book" && "Кітапты оқу сілтемесі"}
+              {type === "game" && "Ойынды ойнау сілтемесі"}
+            </Label>
+            <Input
+              id="watchUrl"
+              type="url"
+              value={formData.watchUrl || ""}
+              onChange={(e) => setFormData({ ...formData, watchUrl: e.target.value })}
+              placeholder="https://example.com/watch"
+            />
+            <p className="text-xs text-muted-foreground">
+              {type === "movie" && "Фильмді онлайн көруге арналған сілтеме (міндетті емес)"}
+              {type === "book" && "Кітапты онлайн оқуға арналған сілтеме (міндетті емес)"}
+              {type === "game" && "Ойынды онлайн ойнауға арналған сілтеме (міндетті емес)"}
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="year">Год</Label>
+              <Label htmlFor="year">Жылы</Label>
               <Input
                 id="year"
                 type="number"
@@ -157,7 +180,7 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="popularity">Популярность (0-100)</Label>
+            <Label htmlFor="popularity">Танымалдығы (0-100)</Label>
             <Input
               id="popularity"
               type="number"
@@ -170,7 +193,7 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="genre">Жанры</Label>
+            <Label htmlFor="genre">Жанрлар</Label>
             <div className="flex gap-2">
               <Input
                 id="genre"
@@ -182,10 +205,10 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
                     addGenre()
                   }
                 }}
-                placeholder="Добавь жанр и нажми Enter"
+                placeholder="Жанр енгізіп, Enter пернесін басыңыз"
               />
               <Button type="button" onClick={addGenre} variant="outline">
-                Добавить
+                Қосу
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -202,9 +225,9 @@ export function AdminForm({ isOpen, onClose, onSave, item, type }: AdminFormProp
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Отмена
+              Бас тарту
             </Button>
-            <Button type="submit">{item ? "Обновить" : "Создать"}</Button>
+            <Button type="submit">{item ? "Жаңарту" : "Құру"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

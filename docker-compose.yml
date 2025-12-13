@@ -1,0 +1,70 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: mediacatalog-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mediacatalog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mediacatalog123}
+      POSTGRES_DB: ${POSTGRES_DB:-mediacatalog}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/auth_schema.sql:/docker-entrypoint-initdb.d/02-auth-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mediacatalog}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mediacatalog-network
+
+  # Next.js App (Frontend + Backend API routes бірге)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mediacatalog-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/movies || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-mediacatalog}:${POSTGRES_PASSWORD:-mediacatalog123}@postgres:5432/${POSTGRES_DB:-mediacatalog}?schema=public
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your-secret-key-change-in-production}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+      - NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY:-}
+      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:-}
+      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID:-}
+      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:-}
+      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-}
+      - NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./public:/app/public:ro
+    networks:
+      - mediacatalog-network
+    command: sh -c "cd /app && echo 'Prisma клиентін generate ету...' && npx prisma generate && echo 'Миграцияларды орындау...' && npx prisma migrate deploy && echo 'Серверді іске қосу...' && if [ -f server.js ]; then node server.js; elif [ -f app/server.js ]; then node app/server.js; else echo 'ҚАТЕ: server.js файлы табылмады!'; ls -la /app/; exit 1; fi"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  mediacatalog-network:
+    driver: bridge
+
+

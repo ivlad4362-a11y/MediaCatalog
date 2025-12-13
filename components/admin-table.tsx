@@ -4,7 +4,7 @@ import { Pencil, Trash2, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
+import { SafeImage } from "@/components/safe-image"
 import type { MediaItem } from "@/lib/types"
 
 interface AdminTableProps {
@@ -19,19 +19,19 @@ export function AdminTable({ items, onEdit, onDelete }: AdminTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[80px]">Обложка</TableHead>
-            <TableHead>Название</TableHead>
-            <TableHead>Год</TableHead>
+            <TableHead className="w-[80px]">Мұқаба</TableHead>
+            <TableHead>Атауы</TableHead>
+            <TableHead>Жылы</TableHead>
             <TableHead>Рейтинг</TableHead>
             <TableHead>Жанр</TableHead>
-            <TableHead className="text-right">Действия</TableHead>
+            <TableHead className="text-right">Әрекеттер</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                Элементы не найдены. Добавь первый элемент, чтобы начать.
+                Элементтер табылмады. Бастау үшін бірінші элементті қосыңыз.
               </TableCell>
             </TableRow>
           ) : (
@@ -39,7 +39,7 @@ export function AdminTable({ items, onEdit, onDelete }: AdminTableProps) {
               <TableRow key={item.id}>
                 <TableCell>
                   <div className="relative w-12 h-16 rounded overflow-hidden">
-                    <Image src={item.coverImage || "/placeholder.svg"} alt={item.title} fill className="object-cover" />
+                    <SafeImage src={item.coverImage || "/placeholder.svg"} alt={item.title} fill className="object-cover" />
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">{item.title}</TableCell>
@@ -63,7 +63,7 @@ export function AdminTable({ items, onEdit, onDelete }: AdminTableProps) {
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" onClick={() => onEdit(item)} className="h-8 w-8">
                       <Pencil className="h-4 w-4" />
-                      <span className="sr-only">Редактировать</span>
+                      <span className="sr-only">Өңдеу</span>
                     </Button>
                     <Button
                       variant="ghost"
@@ -72,7 +72,7 @@ export function AdminTable({ items, onEdit, onDelete }: AdminTableProps) {
                       className="h-8 w-8 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Удалить</span>
+                      <span className="sr-only">Жою</span>
                     </Button>
                   </div>
                 </TableCell>

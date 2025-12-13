@@ -3,44 +3,23 @@ import { Footer } from "@/components/footer"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { CatalogGrid } from "@/components/catalog-grid"
 import { Book } from "lucide-react"
+import type { MediaItem } from "@/lib/types"
 
-const bookItems = [
-  {
-    id: "3",
-    title: "Dune",
-    description: "A science fiction novel about politics, religion, and ecology on the desert planet Arrakis",
-    coverImage: "/dune-book-cover.png",
-    type: "book" as const,
-    rating: 8.5,
-    year: 1965,
-    genre: ["Sci-Fi", "Fantasy"],
-    popularity: 92,
-  },
-  {
-    id: "8",
-    title: "Project Hail Mary",
-    description: "A lone astronaut must save Earth from disaster in this thrilling science fiction adventure",
-    coverImage: "/project-hail-mary-book.png",
-    type: "book" as const,
-    rating: 8.7,
-    year: 2021,
-    genre: ["Sci-Fi", "Adventure"],
-    popularity: 91,
-  },
-  {
-    id: "13",
-    title: "The Three-Body Problem",
-    description: "A secret military project sends signals into space to establish contact with aliens",
-    coverImage: "/three-body-problem-book.jpg",
-    type: "book" as const,
-    rating: 8.1,
-    year: 2008,
-    genre: ["Sci-Fi", "Mystery"],
-    popularity: 88,
-  },
-]
+async function getBooks() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/books`, { cache: "no-store" })
+    const books: MediaItem[] = await res.json()
+    return books
+  } catch (error) {
+    console.error("Кітаптарды алу қатесі:", error)
+    return []
+  }
+}
 
-export default function BooksPage() {
+export default async function BooksPage() {
+  const bookItems = await getBooks()
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -52,8 +31,8 @@ export default function BooksPage() {
               <Book className="h-6 w-6 text-secondary" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-balance">Книги</h1>
-              <p className="text-muted-foreground text-pretty">Исследуй захватывающие истории и знания</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-balance">Кітаптар</h1>
+              <p className="text-muted-foreground text-pretty">Қызықты оқиғалар мен білімді зертте</p>
             </div>
           </div>
         </div>

@@ -1,0 +1,37 @@
+{
+  "sqltools.connections": [
+    {
+      "name": "MediaCatalog PostgreSQL",
+      "driver": "PostgreSQL",
+      "server": "localhost",
+      "port": 5432,
+      "database": "mediacatalog",
+      "username": "postgres",
+      "password": "",
+      "connectionTimeout": 10
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-// Небольшая анимация кнопки "вверх"
+// "Жоғары" түймесіне арналған шағын анимация
 const scrollBtn = document.createElement("button");
 scrollBtn.textContent = "↑";
 scrollBtn.className = "scroll-top";

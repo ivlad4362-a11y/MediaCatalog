@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Genre {
+  id        Int          @id @default(autoincrement())
+  name      String       @unique @db.VarChar(100)
+  createdAt DateTime     @default(now()) @map("created_at")
+  media     MediaGenre[]
+
+  @@map("genres")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model MediaItem {
+  id          String       @id @db.VarChar(50)
+  title       String       @db.VarChar(255)
+  description String?
+  coverImage  String?      @map("cover_image") @db.VarChar(500)
+  watchUrl    String?      @map("watch_url") @db.VarChar(500)
+  type        String       @db.VarChar(20)
+  rating      Decimal      @db.Decimal(3, 1)
+  year        Int
+  popularity  Int          @default(0)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at")
+  comments    Comment[]
+  favorites   Favorite[]
+  genres      MediaGenre[]
+
+  @@unique([title, type])
+  @@index([type])
+  @@index([year])
+  @@index([rating])
+  @@index([popularity])
+  @@map("media_items")
+}
+
+model MediaGenre {
+  mediaId String    @map("media_id")
+  genreId Int       @map("genre_id")
+  genre   Genre     @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  media   MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([mediaId, genreId])
+  @@map("media_genres")
+}
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  mediaId    String    @map("media_id") @db.VarChar(50)
+  userId     String?   @map("user_id") @db.VarChar(100)
+  userName   String    @map("user_name") @db.VarChar(100)
+  userAvatar String?   @map("user_avatar") @db.VarChar(500)
+  content    String
+  rating     Decimal?  @db.Decimal(3, 1)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  media      MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId])
+  @@map("comments")
+}
+
+model Favorite {
+  id        Int       @id @default(autoincrement())
+  userId    String    @map("user_id") @db.VarChar(100)
+  mediaId   String    @map("media_id") @db.VarChar(50)
+  createdAt DateTime  @default(now()) @map("created_at")
+  media     MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId])
+  @@index([userId])
+  @@index([mediaId])
+  @@map("favorites")
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.VarChar(50)
+  email         String    @unique @db.VarChar(255)
+  name          String?   @db.VarChar(255)
+  passwordHash  String    @map("password_hash") @db.VarChar(255)
+  image         String?   @db.VarChar(500)
+  role          String    @default("user") @db.VarChar(20)
+  emailVerified DateTime? @map("email_verified")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  accounts      Account[]
+  sessions      Session[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Account {
+  id                String   @id @default(uuid()) @db.VarChar(50)
+  userId            String   @map("user_id") @db.VarChar(50)
+  type              String   @db.VarChar(50)
+  provider          String   @db.VarChar(50)
+  providerAccountId String   @map("provider_account_id") @db.VarChar(255)
+  refreshToken      String?  @map("refresh_token")
+  accessToken       String?  @map("access_token")
+  expiresAt         Int?     @map("expires_at")
+  tokenType         String?  @map("token_type") @db.VarChar(50)
+  scope             String?
+  idToken           String?  @map("id_token")
+  sessionState      String?  @map("session_state")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.VarChar(50)
+  sessionToken String   @unique @map("session_token") @db.VarChar(255)
+  userId       String   @map("user_id") @db.VarChar(50)
+  expires      DateTime
+  createdAt    DateTime @default(now()) @map("created_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String   @db.VarChar(255)
+  token      String   @db.VarChar(255)
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("verification_tokens")
+}
